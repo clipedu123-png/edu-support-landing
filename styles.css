@@ -9,7 +9,7 @@
 *{margin:0;padding:0;box-sizing:border-box}
 html{scroll-behavior:smooth}
 body{font-family:'Pretendard',sans-serif;background:var(--white);color:var(--ink);
-  -webkit-font-smoothing:antialiased;line-height:1.5}
+  -webkit-font-smoothing:antialiased;line-height:1.5;word-break:keep-all}
 a{text-decoration:none;color:inherit;cursor:pointer}
 .wrap{max-width:1080px;margin:0 auto;padding:0 24px}
 .sec-label{display:inline-block;color:var(--blue-600);font-weight:800;font-size:14px;letter-spacing:.02em;margin-bottom:12px}
