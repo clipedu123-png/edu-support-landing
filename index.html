@@ -17,7 +17,7 @@
     <div class="nav-menu">
       <a href="#proof">지원금 안내</a><a href="#steps">신청 방법</a><a href="#reviews">후기</a><a href="#faq">자주 묻는 질문</a>
     </div>
-    <a href="https://pf.kakao.com/_FsnQn" target="_blank" class="nav-cta">카카오톡 상담</a>
+    <a href="https://pf.kakao.com/_FsnQn" target="_blank" class="nav-cta">고객센터</a>
   </div>
 </nav>
 
@@ -31,13 +31,6 @@
     <span class="eyebrow">클립에듀 서포터즈 프로그램</span>
     <h1>학원비, 지금<br>돌려받으세요</h1>
     <p class="sub">방문 상담만 해도 <b>2만원 즉시</b> 지급 ·<br>등록하면 과목당 연 최대 <b>30만원</b> 상품권 페이백</p>
-    <div class="cta-row">
-      <a href="https://pf.kakao.com/_FsnQn" target="_blank" class="btn-kakao">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3C6.48 3 2 6.92 2 11.75c0 3.05 1.82 5.73 4.58 7.38L5.5 22.5l4.08-2.7c.79.14 1.6.2 2.42.2 5.52 0 10-3.92 10-8.75S17.52 3 12 3z"/></svg>
-        카카오톡으로 무료 상담
-      </a>
-      <a href="#steps" class="btn-ghost">어떻게 신청하나요 →</a>
-    </div>
   </div>
 </section>
 
@@ -233,15 +226,72 @@
   </div>
 </section>
 
-<!-- FINAL CTA -->
-<section class="final">
-  <h2>지금 시작하면<br>학원비가 돌아옵니다</h2>
+<!-- FINAL CTA → 신청 폼 -->
+<section class="final" id="apply">
+  <h2>지금 신청하고<br>학원비를 돌려받으세요</h2>
   <p>방문 상담비 2만원 즉시 지급 + 연간 최대 30만원 페이백</p>
-  <a href="https://pf.kakao.com/_FsnQn" target="_blank" class="btn-kakao">
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3C6.48 3 2 6.92 2 11.75c0 3.05 1.82 5.73 4.58 7.38L5.5 22.5l4.08-2.7c.79.14 1.6.2 2.42.2 5.52 0 10-3.92 10-8.75S17.52 3 12 3z"/></svg>
-    카카오톡으로 무료 상담 신청
-  </a>
-  <p class="note">클립에듀 서포터즈 운영시간 · 월~금 10:30–18:30</p>
+
+  <form class="apply-card reveal" id="applyForm" novalidate>
+    <div class="af-grid">
+      <div class="af-field">
+        <label for="af-name">신청자 성명 <span>*</span></label>
+        <input type="text" id="af-name" name="name" placeholder="이름을 입력해주세요." required autocomplete="name">
+      </div>
+      <div class="af-field">
+        <label for="af-phone">연락처 (학부모) <span>*</span></label>
+        <input type="tel" id="af-phone" name="phone" placeholder="010-0000-0000" required inputmode="numeric" maxlength="13" autocomplete="tel">
+      </div>
+      <div class="af-field">
+        <label for="af-count">자녀 수 <span>*</span></label>
+        <select id="af-count" name="childCount" required>
+          <option value="" disabled selected hidden>선택해주세요.</option>
+          <option value="1명">1명</option>
+          <option value="2명">2명</option>
+          <option value="3명">3명</option>
+          <option value="4명 이상">4명 이상</option>
+        </select>
+      </div>
+      <div class="af-field">
+        <label for="af-grade">자녀 학년 <span>*</span></label>
+        <input type="text" id="af-grade" name="grade" placeholder="예: 초3, 중1" required>
+      </div>
+    </div>
+
+    <div class="af-field af-full">
+      <label>필요한 과목 <span>*</span></label>
+      <div class="af-checks" role="group" aria-label="필요한 과목">
+        <label class="af-chk"><input type="checkbox" name="subject" value="국어">국어</label>
+        <label class="af-chk"><input type="checkbox" name="subject" value="영어">영어</label>
+        <label class="af-chk"><input type="checkbox" name="subject" value="수학">수학</label>
+        <label class="af-chk"><input type="checkbox" name="subject" value="과학">과학</label>
+        <label class="af-chk"><input type="checkbox" name="subject" value="논술">논술</label>
+        <label class="af-chk"><input type="checkbox" name="subject" value="예체능">예체능</label>
+        <label class="af-chk"><input type="checkbox" name="subject" value="기타">기타</label>
+      </div>
+    </div>
+
+    <div class="af-field af-full">
+      <label for="af-note">비고란</label>
+      <textarea id="af-note" name="note" rows="3" maxlength="500" placeholder="희망 지역, 상담 가능한 시간 등 참고사항을 자유롭게 적어주세요. (선택)"></textarea>
+      <span class="af-counter"><span id="afCount">0</span>/500</span>
+    </div>
+
+    <!-- 약관 동의: 차장님 약관 문서 전달 전까지 임시 숨김.
+         문서 받으면 아래 주석(<!-- -->) 해제 + href 2곳 교체하면 복원됨. -->
+    <!--
+    <label class="af-agree">
+      <input type="checkbox" id="af-agree" name="agree" required>
+      <span><a href="#" class="af-link">이용약관</a> 및 <a href="#" class="af-link">개인정보처리방침</a>에 동의합니다. <b>*</b></span>
+    </label>
+    -->
+
+    <button type="submit" class="af-submit">
+      신청하기
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+    </button>
+    <p class="af-ok" id="afOk" hidden>신청이 접수되었어요. 담당자가 영업일 기준 빠르게 연락드릴게요.</p>
+    <p class="af-note">제출하신 정보는 학원 매칭·상담 목적으로만 사용되며, 외부에 공유되지 않습니다.</p>
+  </form>
 </section>
 
 <!-- FOOTER -->
@@ -257,7 +307,7 @@
 
 <a href="https://pf.kakao.com/_FsnQn" target="_blank" class="fab" id="fab">
   <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3C6.48 3 2 6.92 2 11.75c0 3.05 1.82 5.73 4.58 7.38L5.5 22.5l4.08-2.7c.79.14 1.6.2 2.42.2 5.52 0 10-3.92 10-8.75S17.52 3 12 3z"/></svg>
-  무료 상담
+  고객센터
 </a>
 
 <script src="script.js"></script>
