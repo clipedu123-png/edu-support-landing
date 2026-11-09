@@ -34,9 +34,6 @@ if (form) {
   const counter = document.getElementById('afCount');
   note.addEventListener('input', () => { counter.textContent = note.value.length; });
 
-  // 약관 링크 (문서 확정 전까지 이동 방지)
-  form.querySelectorAll('.af-link').forEach(a => a.addEventListener('click', e => e.preventDefault()));
-
   // 제출 (유효성검사만 — 전송/DB 연동은 개발팀 협의 후 TODO)
   const okMsg = document.getElementById('afOk');
   form.addEventListener('submit', e => {

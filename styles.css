@@ -247,3 +247,30 @@ footer{background:#0B0F1A;color:#7A8499;padding:40px 24px}
   .subj{margin-left:20px;margin-right:20px}
   .section{padding:60px 0}
 }
+
+/* FOOTER 약관 링크 */
+.foot-links{display:flex;gap:18px;font-size:13px;font-weight:600;flex-shrink:0}
+.foot-links a{color:#9AA6BE}
+.foot-links a:hover{color:#fff}
+@media(max-width:560px){.foot-in{flex-direction:column;align-items:flex-start;gap:14px}}
+
+/* 약관·개인정보처리방침 페이지 (privacy.html / terms.html) */
+.legal{background:var(--bg);min-height:72vh;padding:48px 0 80px}
+.legal-wrap{max-width:860px;margin:0 auto;padding:0 24px}
+.legal-back{display:inline-flex;align-items:center;gap:6px;font-size:14px;font-weight:600;color:var(--gray-500);margin-bottom:22px}
+.legal-back:hover{color:var(--blue-600)}
+.legal-card{background:#fff;border:1px solid var(--gray-200);border-radius:20px;padding:48px 44px;box-shadow:0 12px 30px rgba(30,50,100,.05)}
+.legal-h1{font-size:clamp(23px,3.5vw,30px);font-weight:800;letter-spacing:-.02em;color:var(--ink)}
+.legal-meta{margin-top:10px;font-size:13px;color:var(--gray-400);font-weight:600}
+.legal-intro{margin-top:20px;font-size:14.5px;color:var(--gray-700);line-height:1.78}
+.legal-doc h2{font-size:17.5px;font-weight:800;color:var(--ink);letter-spacing:-.01em;margin:30px 0 10px;padding-top:26px;border-top:1px solid var(--gray-200)}
+.legal-doc h3{font-size:14.5px;font-weight:700;color:var(--blue-700);margin:18px 0 6px}
+.legal-doc p{font-size:14px;color:var(--gray-700);line-height:1.76;margin:8px 0}
+.legal-doc ul{list-style:none;margin:8px 0;padding:0}
+.legal-doc li{position:relative;font-size:14px;color:var(--gray-700);line-height:1.74;padding-left:15px;margin:6px 0}
+.legal-doc li::before{content:"";position:absolute;left:1px;top:10px;width:4px;height:4px;border-radius:50%;background:var(--blue-500)}
+.legal-contact{background:var(--blue-50);border:1px solid var(--blue-100);border-radius:12px;padding:14px 20px;margin:14px 0}
+.legal-contact p{margin:0 0 6px}
+.legal-contact li{padding-left:0}
+.legal-contact li::before{display:none}
+@media(max-width:560px){.legal-card{padding:30px 22px}.legal{padding:32px 0 60px}}
