@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="crm-origin" content="https://clipedu-admin.kr">
 <title>교육비 지원금 | 클립에듀 서포터즈</title>
 <meta name="description" content="클립에듀를 통해 학원을 등록하면 과목당 연 최대 30만원 상품권으로 돌려드립니다. 방문 상담만 해도 2만원 즉시 지급.">
 <link rel="icon" type="image/png" href="img/favicon.png">
@@ -285,8 +286,9 @@
       신청하기
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
     </button>
-    <p class="af-ok" id="afOk" hidden>신청이 접수되었어요. 담당자가 영업일 기준 빠르게 연락드릴게요.</p>
-    <p class="af-note">제출하신 정보는 학원 매칭·상담 목적으로만 사용되며, 외부에 공유되지 않습니다.</p>
+    <p class="af-ok" id="afOk" role="status" hidden>신청이 접수되었어요. 담당자가 영업일 기준 빠르게 연락드릴게요.</p>
+    <p id="afError" role="alert" hidden></p>
+    <p class="af-note">제출하신 정보는 학원 매칭·상담을 위해 이용되며, 이용자의 별도 동의 없이 학원에 제공되지 않습니다. 자세한 내용은 개인정보처리방침을 확인해주세요.</p>
   </form>
 </section>
 
