@@ -2,9 +2,22 @@ const { test, expect } = require('@playwright/test');
 const fs = require('fs');
 const path = require('path');
 const http = require('http');
-let server, base;
+const crypto = require('crypto');
+let server, base, staleRequests = 0;
 test.beforeAll(async () => {
   server = http.createServer((req, res) => {
+    if (req.url === '/cache-seed') {
+      res.setHeader('Content-Type', 'text/html');
+      res.end('<script src="/script.js"></script>');
+      return;
+    }
+    if (req.url === '/script.js') {
+      staleRequests++;
+      res.setHeader('Content-Type', 'text/javascript');
+      res.setHeader('Cache-Control', 'public, max-age=3600');
+      res.end('window.preIntegrationScript = true;');
+      return;
+    }
     const file = req.url === '/' ? 'index.html' : req.url.slice(1).split('?')[0];
     const p = path.join(__dirname, '..', file);
     if (!['index.html', 'script.js', 'styles.css'].includes(file)) { res.writeHead(404).end(); return; }
@@ -15,6 +28,26 @@ test.beforeAll(async () => {
   base = `http://127.0.0.1:${server.address().port}`;
 });
 test.afterAll(() => new Promise(resolve => server.close(resolve)));
+test('refreshed HTML requests the current script instead of cached pre-integration JS', async ({ page }) => {
+  await page.goto(base + '/cache-seed');
+  expect(await page.evaluate(() => window.preIntegrationScript)).toBe(true);
+  expect(staleRequests).toBe(1);
+  await page.goto(base + '/cache-seed');
+  expect(await page.evaluate(() => window.preIntegrationScript)).toBe(true);
+  expect(staleRequests).toBe(1); // The second load actually reused the cached old script.
+  await page.goto(base);
+  expect(staleRequests).toBe(1);
+  await page.reload();
+  const scriptURL = await page.locator('script[src]').last().getAttribute('src');
+  const digest = crypto.createHash('sha256').update(fs.readFileSync(path.join(__dirname, '..', 'script.js'))).digest('hex');
+  expect(scriptURL).toBe(`script.js?v=${digest}`);
+  expect(await page.evaluate(() => window.preIntegrationScript)).toBeUndefined();
+  await page.locator('meta[name="crm-origin"]').evaluate(el => { el.content = ''; });
+  await fill(page);
+  await page.locator('.af-submit').click();
+  await expect(page.locator('#afError')).toBeVisible();
+  await expect(page.locator('#afOk')).toBeHidden();
+});
 async function setup(page, configure = true) {
   await page.route('**/*', async route => {
     const url = route.request().url();
