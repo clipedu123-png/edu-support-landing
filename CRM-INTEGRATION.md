@@ -19,3 +19,5 @@
 ## 테스트
 
 `@playwright/test`와 Chromium을 별도로 준비한 뒤 `npx playwright test tests/submission.spec.cjs --workers=1` 실행. 테스트는 로컬 HTTP 서버와 가로챈 합성 응답만 사용하며 운영 CRM에 쓰지 않습니다.
+
+`script.js`를 수정하면 `sha256sum script.js`의 전체 해시로 `index.html`의 `script.js?v=...` 값을 갱신하세요. 회귀 테스트가 해시 일치 여부와 이전 스크립트 캐시를 확인합니다.
