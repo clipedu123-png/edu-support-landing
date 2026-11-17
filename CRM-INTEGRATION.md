@@ -21,3 +21,13 @@
 `@playwright/test`와 Chromium을 별도로 준비한 뒤 `npx playwright test tests/submission.spec.cjs --workers=1` 실행. 테스트는 로컬 HTTP 서버와 가로챈 합성 응답만 사용하며 운영 CRM에 쓰지 않습니다.
 
 `script.js`를 수정하면 `sha256sum script.js`의 전체 해시로 `index.html`의 `script.js?v=...` 값을 갱신하세요. 회귀 테스트가 해시 일치 여부와 이전 스크립트 캐시를 확인합니다.
+
+## 방문 집계 (2026-11-17)
+
+페이지를 열 때와 신청이 접수됐을 때 `POST {crm-origin}/api/public/education-visits`로 유입 경로와 횟수만 알립니다. 이름·연락처 등 신청 내용은 보내지 않습니다.
+
+- 보내는 값: `event`(`view` 또는 `submit`), `source`(주소의 `?from=` 또는 `?utm_source=` 값, 없으면 생략), `first`(그 기기의 오늘 첫 방문 여부, `view`에만).
+- 유입 경로는 영문 소문자·숫자·`-`·`_` 32자 이내만 인정합니다. 탭을 닫기 전까지 `sessionStorage`에 유지하고, 오늘 방문 여부는 `localStorage`에 날짜만 남깁니다.
+- SK 설문 추가보상 링크는 `https://clipedu-support.co.kr/?from=sk`를 씁니다. CRM은 `sk`, `danggeun`, `momcafe`, `kakao`, `insta`, `naver`만 구분하고 그 외 값은 기타로 묶습니다.
+- 집계 전송이 실패해도 화면과 신청에는 영향이 없습니다. 내 PC(127.0.0.1·localhost)에서 연 페이지는 운영 CRM으로 집계를 보내지 않습니다.
+- 확인 위치: CRM 리터치팀 `SK설문조사` 탭의 "랜딩페이지 유입" 상자.
