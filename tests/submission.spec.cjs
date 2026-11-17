@@ -48,17 +48,17 @@ test('refreshed HTML requests the current script instead of cached pre-integrati
   await expect(page.locator('#afError')).toBeVisible();
   await expect(page.locator('#afOk')).toBeHidden();
 });
-async function setup(page, configure = true) {
+async function setup(page, configure = true, search = '') {
   await page.route('**/*', async route => {
     const url = route.request().url();
-    if (url === base + '/' && configure) {
+    if ((url === base + '/' || url.startsWith(base + '/?')) && configure) {
       const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8').replace(/name="crm-origin" content="[^"]*"/, `name="crm-origin" content="${base}"`);
       return route.fulfill({ status: 200, contentType: 'text/html', body: html });
     }
-    if (url.startsWith(base)) return route.continue();
+    if (url.startsWith(base)) return route.fallback(); // 먼저 등록한 가로채기(방문 집계 등)가 있으면 그쪽이 처리한다
     return route.abort();
   });
-  await page.goto(base);
+  await page.goto(base + (search ? '/' + search : ''));
 }
 async function fill(page) {
   await page.locator('#af-name').fill('테스트');
@@ -155,4 +155,78 @@ test('a stalled request times out without claiming success', async ({ page }) =>
   await page.clock.fastForward(15001);
   await expect(page.locator('#afError')).toBeVisible();
   await expect(page.locator('#afOk')).toBeHidden();
+});
+
+// 방문 집계(2026-11-17): 유입 경로와 횟수만 CRM에 알린다. 개인정보는 보내지 않는다.
+async function captureVisits(page) {
+  const visits = [];
+  await page.route('**/api/public/education-visits', async route => {
+    visits.push(route.request().postDataJSON());
+    await route.fulfill({ status: 204, body: '' });
+  });
+  return visits;
+}
+test('reports a page view with the ?from= source and marks only the first visit of the day', async ({ page }) => {
+  const visits = await captureVisits(page);
+  await setup(page, true, '?from=sk');
+  await expect.poll(() => visits.length).toBe(1);
+  expect(visits[0]).toEqual({ event: 'view', source: 'sk', first: true });
+  await page.reload();
+  await expect.poll(() => visits.length).toBe(2);
+  expect(visits[1]).toEqual({ event: 'view', source: 'sk', first: false });
+  // 같은 탭에서 ?from 없이 다시 열어도 처음 들어온 경로를 유지한다.
+  await page.goto(base);
+  await expect.poll(() => visits.length).toBe(3);
+  expect(visits[2]).toEqual({ event: 'view', source: 'sk', first: false });
+});
+test('a visit without ?from= has no source, and unsafe values are dropped', async ({ page, context }) => {
+  const visits = await captureVisits(page);
+  await setup(page);
+  await expect.poll(() => visits.length).toBe(1);
+  expect(visits[0]).toEqual({ event: 'view', first: true });
+  const other = await context.newPage();
+  const otherVisits = await captureVisits(other);
+  await setup(other, true, '?from=' + encodeURIComponent('<script>alert(1)</script>'));
+  await expect.poll(() => otherVisits.length).toBe(1);
+  expect(otherVisits[0]).toEqual({ event: 'view', first: false }); // 같은 브라우저의 두 번째 방문
+  const campaign = await context.newPage();
+  const campaignVisits = await captureVisits(campaign);
+  await setup(campaign, true, '?utm_source=SK-CLE20261116');
+  await expect.poll(() => campaignVisits.length).toBe(1);
+  expect(campaignVisits[0]).toEqual({ event: 'view', source: 'sk-cle20261116', first: false });
+});
+test('a successful application reports one submit without any form values', async ({ page }) => {
+  const visits = await captureVisits(page);
+  await setup(page, true, '?from=sk');
+  await page.route('**/api/public/education-applications', async route => { await route.fulfill({ status: 204, body: '' }); });
+  await fill(page); await page.locator('.af-submit').click();
+  await expect(page.locator('#afOk')).toBeVisible();
+  await expect.poll(() => visits.length).toBe(2);
+  expect(visits[1]).toEqual({ event: 'submit', source: 'sk' });
+  for (const visit of visits) expect(JSON.stringify(visit)).not.toMatch(/테스트|010|초3|영어|requestId/);
+});
+test('a failed application does not report a submit', async ({ page }) => {
+  const visits = await captureVisits(page);
+  await setup(page);
+  await page.route('**/api/public/education-applications', async route => { await route.fulfill({ status: 400, body: '' }); });
+  await fill(page); await page.locator('.af-submit').click();
+  await expect(page.locator('#afError')).toBeVisible();
+  expect(visits.filter(v => v.event === 'submit')).toEqual([]);
+});
+test('a page opened locally never reports visits to the production CRM', async ({ page }) => {
+  const external = [];
+  page.on('request', request => { if (!request.url().startsWith(base)) external.push(request.url()); });
+  await setup(page, false, '?from=sk'); // crm-origin 은 운영 주소 그대로
+  await page.waitForTimeout(300);
+  expect(external.filter(url => url.includes('education-visits'))).toEqual([]);
+});
+test('a tracking failure never blocks the page or the application', async ({ page }) => {
+  await page.route('**/api/public/education-visits', route => route.abort('failed'));
+  const errors = [];
+  page.on('pageerror', error => errors.push(error.message));
+  await setup(page, true, '?from=sk');
+  await page.route('**/api/public/education-applications', async route => { await route.fulfill({ status: 204, body: '' }); });
+  await fill(page); await page.locator('.af-submit').click();
+  await expect(page.locator('#afOk')).toBeVisible();
+  expect(errors).toEqual([]);
 });

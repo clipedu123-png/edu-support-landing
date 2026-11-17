@@ -17,6 +17,55 @@ document.querySelectorAll('.faq-q').forEach(q => {
   });
 });
 
+// 방문 집계 — 유입 경로(?from=)와 횟수만 CRM에 알린다. 이름·연락처 등 개인정보는 보내지 않는다.
+const SOURCE_RE = /^[a-z0-9][a-z0-9_-]{0,31}$/;
+const visitBase = (() => {
+  try {
+    const origin = document.querySelector('meta[name="crm-origin"]').content.trim();
+    const url = new URL(origin);
+    const local = host => host === '127.0.0.1' || host === 'localhost';
+    if (url.origin !== origin || (url.protocol !== 'https:' && !(url.protocol === 'http:' && url.hostname === '127.0.0.1'))) return '';
+    // 내 PC에서 연 페이지가 운영 CRM의 집계를 올리지 않게 한다.
+    if (local(location.hostname) && !local(url.hostname)) return '';
+    return url.origin;
+  } catch { return ''; }
+})();
+// 주소의 ?from=sk 처럼 붙은 유입 경로. 탭을 닫기 전까지는 다른 페이지를 다녀와도 유지한다.
+const visitSource = (() => {
+  let value = '';
+  try {
+    const params = new URLSearchParams(location.search);
+    value = (params.get('from') || params.get('utm_source') || '').trim().toLowerCase();
+  } catch {}
+  try {
+    if (SOURCE_RE.test(value)) sessionStorage.setItem('cle-from', value);
+    else value = sessionStorage.getItem('cle-from') || '';
+  } catch {}
+  return SOURCE_RE.test(value) ? value : '';
+})();
+function trackVisit(event) {
+  if (!visitBase) return;
+  const body = { event };
+  if (visitSource) body.source = visitSource;
+  if (event === 'view') {
+    // 오늘 처음 들어온 기기인지만 표시한다(브라우저에는 날짜만 남긴다). 저장소를 못 쓰는 환경은 매번 첫 방문으로 센다.
+    let first = true;
+    try {
+      const today = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Seoul' }).format(new Date());
+      first = localStorage.getItem('cle-visit-day') !== today;
+      if (first) localStorage.setItem('cle-visit-day', today);
+    } catch {}
+    body.first = first;
+  }
+  try {
+    fetch(`${visitBase}/api/public/education-visits`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body), credentials: 'omit', keepalive: true
+    }).catch(() => {});
+  } catch {}
+}
+trackVisit('view');
+
 // 신청 폼
 const form = document.getElementById('applyForm');
 if (form) {
@@ -125,6 +174,7 @@ if (form) {
       }
       if (!response.ok) throw new Error('HTTP ' + response.status);
       okMsg.hidden = false;
+      trackVisit('submit');
       okMsg.scrollIntoView({ behavior: 'smooth', block: 'center' });
     } catch {
       uncertain = true;
