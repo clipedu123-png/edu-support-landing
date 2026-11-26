@@ -112,28 +112,27 @@ if (liveWall) {
   fill(trackA, 7);
   fill(trackB, 7);
 
-  // 신청 건수 연출 — 오늘(시간대에 따라 증가) / 이번 주(요일 누적)
+  // 신청 건수 연출 — 오늘 10~20건 / 이번 주 70~80건 (상한 고정)
   const todayEl = document.getElementById('liveToday');
   const weekEl = document.getElementById('liveWeek');
   const now = new Date();
   const hour = now.getHours() + now.getMinutes() / 60;
   const progress = Math.min(Math.max((hour - 8) / 11, 0.05), 1);
-  let today = Math.round(22 + progress * 58);        // 오늘 약 22~80건
-  const dow = (now.getDay() + 6) % 7;                // 월=0 ... 일=6
-  let week = today + Math.round(dow * 52 + Math.random() * 30);
-  const todayCeil = today + 18;
+  const todayCeil = 20;
+  const weekCeil = 80;
+  let today = Math.min(Math.round(10 + progress * 8 + Math.random() * 2), todayCeil); // 약 10~20건
+  let week = Math.round(70 + Math.random() * 8);                                       // 약 70~78건
   if (todayEl) todayEl.textContent = today;
   if (weekEl) weekEl.textContent = week;
 
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
   if (!reduce && todayEl && weekEl) {
     const bump = () => {
-      if (today < todayCeil && Math.random() < 0.5) {
-        today++; week++;
-        todayEl.textContent = today;
-        weekEl.textContent = week;
+      if (Math.random() < 0.5) {
+        if (today < todayCeil) { today++; todayEl.textContent = today; }
+        if (week < weekCeil) { week++; weekEl.textContent = week; }
       }
-      setTimeout(bump, 6000 + Math.random() * 7000);
+      if (today < todayCeil || week < weekCeil) setTimeout(bump, 6000 + Math.random() * 7000);
     };
     setTimeout(bump, 5000 + Math.random() * 4000);
   }
