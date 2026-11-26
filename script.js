@@ -127,12 +127,14 @@ if (liveWall) {
 
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
   if (!reduce && todayEl && weekEl) {
+    // 오늘 신청이 오를 때 이번 주도 같은 만큼 +1 (둘을 함께 증가)
     const bump = () => {
-      if (Math.random() < 0.5) {
-        if (today < todayCeil) { today++; todayEl.textContent = today; }
-        if (week < weekCeil) { week++; weekEl.textContent = week; }
+      if (today < todayCeil && week < weekCeil && Math.random() < 0.5) {
+        today++; week++;
+        todayEl.textContent = today;
+        weekEl.textContent = week;
       }
-      if (today < todayCeil || week < weekCeil) setTimeout(bump, 6000 + Math.random() * 7000);
+      if (today < todayCeil && week < weekCeil) setTimeout(bump, 6000 + Math.random() * 7000);
     };
     setTimeout(bump, 5000 + Math.random() * 4000);
   }
