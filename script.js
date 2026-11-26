@@ -66,6 +66,79 @@ function trackVisit(event) {
 }
 trackVisit('view');
 
+// 실시간 상담 신청 현황 — 표시용 연출(가상의 샘플). 서버로 아무것도 보내지 않는다.
+const liveWall = document.getElementById('liveWall');
+if (liveWall) {
+  const SURNAMES = ['김','이','박','최','정','강','조','윤','장','임','한','오','서','신','권','황','안','송','전','홍','고','문','양','손','배'];
+  const SUBJECTS = [
+    ['수학', '수', 'sub-math'], ['영어', '영', 'sub-eng'], ['국어', '국', 'sub-kor'],
+    ['과학', '과', 'sub-sci'], ['논술', '논', 'sub-essay'], ['예체능', '예', 'sub-art'],
+    ['미술', '미', 'sub-art'], ['피아노', '피', 'sub-music']
+  ];
+  const REGIONS = ['서울 강남구','서울 송파구','서울 노원구','서울 목동','경기 분당','경기 수원','경기 일산','경기 용인','경기 평택','인천 연수구','부산 해운대','대구 수성구','대전 유성구','광주 북구'];
+  const EXTRAS = ['자녀 1명','자녀 2명','자녀 3명','초등 자녀','중등 자녀'];
+  const AV_COLORS = ['#6F9BFF','#8C7BF0','#4FB8E0','#F49AC0','#5CC0A8','#F0A868','#5A9CF5','#B08CE8'];
+  const pick = arr => arr[Math.floor(Math.random() * arr.length)];
+
+  function card() {
+    const s = pick(SURNAMES);
+    const [sub] = pick(SUBJECTS);
+    const tail = Math.random() < 0.5 ? pick(REGIONS) : `${pick(REGIONS)} · ${pick(EXTRAS)}`;
+    const el = document.createElement('div');
+    el.className = 'live-card';
+    const ic = document.createElement('span');
+    ic.className = 'live-ic';
+    ic.style.background = pick(AV_COLORS);
+    ic.textContent = s;
+    const ct = document.createElement('div');
+    ct.className = 'live-ct';
+    const nm = document.createElement('b');
+    nm.textContent = `${s}○○ 학부모님`;
+    const dt = document.createElement('span');
+    dt.textContent = `${sub} 상담 신청 · ${tail}`;
+    ct.append(nm, dt);
+    el.append(ic, ct);
+    return el;
+  }
+  function fill(track, n) {
+    const items = Array.from({ length: n }, card);
+    items.forEach(el => track.appendChild(el));
+    items.forEach(el => track.appendChild(el.cloneNode(true))); // 끊김 없는 루프용 복제
+  }
+  const trackA = document.getElementById('liveTrackA');
+  const trackB = document.getElementById('liveTrackB');
+  trackA.textContent = '';
+  trackB.textContent = '';
+  fill(trackA, 7);
+  fill(trackB, 7);
+
+  // 신청 건수 연출 — 오늘(시간대에 따라 증가) / 이번 주(요일 누적)
+  const todayEl = document.getElementById('liveToday');
+  const weekEl = document.getElementById('liveWeek');
+  const now = new Date();
+  const hour = now.getHours() + now.getMinutes() / 60;
+  const progress = Math.min(Math.max((hour - 8) / 11, 0.05), 1);
+  let today = Math.round(22 + progress * 58);        // 오늘 약 22~80건
+  const dow = (now.getDay() + 6) % 7;                // 월=0 ... 일=6
+  let week = today + Math.round(dow * 52 + Math.random() * 30);
+  const todayCeil = today + 18;
+  if (todayEl) todayEl.textContent = today;
+  if (weekEl) weekEl.textContent = week;
+
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (!reduce && todayEl && weekEl) {
+    const bump = () => {
+      if (today < todayCeil && Math.random() < 0.5) {
+        today++; week++;
+        todayEl.textContent = today;
+        weekEl.textContent = week;
+      }
+      setTimeout(bump, 6000 + Math.random() * 7000);
+    };
+    setTimeout(bump, 5000 + Math.random() * 4000);
+  }
+}
+
 // 신청 폼
 const form = document.getElementById('applyForm');
 if (form) {
